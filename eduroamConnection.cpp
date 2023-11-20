@@ -1,3 +1,5 @@
+#include "eduroamConnection.h"
+
 //
 // This sketch repreatedly scans wifi access points until it sees one called
 // eduroam, and it them attempts to connect to it. If the rssi (= received signal
@@ -20,7 +22,7 @@
 
 const char* essid = "eduroam";
 
-void setup() {
+void connect() {
   bool eduroamFound = false;
   
   Serial.begin(115200);
@@ -105,9 +107,4 @@ void setup() {
   Serial.println(essid);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP()); //print LAN IP
-}
-
-
-void loop() {
-
 }
