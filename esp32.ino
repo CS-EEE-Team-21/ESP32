@@ -1,9 +1,9 @@
 #include "eduroamConnection.h"
+#include "I2C.h"
 
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <PubSubClient.h>
-#include <Wire.h>
 
 #define SERVER_URL "https://test.mosquitto.org/"
 
@@ -15,7 +15,11 @@ void setup() {
   delay(10);
   connectToWifi();
   client.setServer("test.mosquitto.org", 1883);
-  Serial.println("\nI2C Scanner");
+
+  // Setting up I2C connection to Nucleo board
+  Wire.begin(8); // Join the bus with address #8
+  Wire.onReceive(sendToMQTT); // Register a function to be called when data is received
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -25,7 +29,7 @@ void loop() {
   }
 
   // Publish with the topic of cheese and the a custom cheesy message
-  bool success = client.publish("cheese", "edam is the only cheese made backwards");
+  bool success = client.publish("UCL_EE-CS_team21", "edam is the only cheese made backwards");
   if (success){
     Serial.println("Message was published successfully!");
   } else {
@@ -51,4 +55,13 @@ void reconnect() {
       delay(5000);
     }
   }
+}
+
+void sendToMQTT(){
+  while (1 < Wire.available()) { // Loop through all received data
+    char c = Wire.read(); // Receive byte
+    Serial.print(c); // Print byte
+  }
+  int x = Wire.read(); // Receive last byte
+  Serial.println(x); // Print last byte
 }
