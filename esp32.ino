@@ -13,35 +13,26 @@ const int ESP_TO_NUCLEO_PORT = 9;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-void setup() {
-  Serial.begin(9600);
-  Wire.begin();
-  delay(10);
-  // connectToWifi();
-  // client.setServer("test.mosquitto.org", 1883);
-  // Wire.onReceive(sendToMQTT); // Register a function to be called when data is received
-}
-
-///////////////////////////// ESP32 TO ARDUINO COMMUNICATION ////////////////////////////////
+///////////////////////////// ESP32 TO NUCLEOBOARD COMMUNICATION //////////////////////////////////
 // Send with 2 decimal places, so a temperature like 25.3 is mapped to 2530 (scaled by 100)
 // 't' for temperature, 'p' for pH and 's' for stirring
 
 void sendTemperature(float temperature){
-  int temperatureData = (int)round(temperature * 100);
+  uint16_t temperatureData = (int)round(temperature * 100);
   sendDataToArduino('t', temperatureData);
 }
 
 void sendpH(float pH){
-  int pHData = (int)round(pH * 100);
+  uint16_t pHData = (int)round(pH * 100);
   sendDataToArduino('p', pHData);
 }
 
 void sendStirringRPM(float rpm){
-  int rpmData = (int)round(rpm);
+  uint16_t rpmData = (int)round(rpm);
   sendDataToArduino('s', rpmData);
 }
 
-void sendDataToArduino(char subsystem, int data){
+void sendDataToArduino(char subsystem, uint16_t data){
   Wire.beginTransmission(ESP_TO_NUCLEO_PORT);
   Wire.write(subsystem);
   Wire.write(highByte(data));
@@ -50,16 +41,62 @@ void sendDataToArduino(char subsystem, int data){
   delay(50);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////// ESP32 FROM NUCLEOBOARD COMMUNICATION //////////////////////////////////
 
-float temperature = 27.34245;
-float pH = 3.4942768523;
-float rpm = 1532.356;
+// In the order: temperature, pH, stirring
+void getReadings(){
+  Wire.requestFrom(ESP_TO_NUCLEO_PORT, 6);
+  delay(50);
+  byte bytes[6];
+
+  for (int i=0; i<6; i++){
+    bytes[i] = Wire.read();
+  }
+
+  uint16_t temperature = word(bytes[0], bytes[1]);
+  uint16_t pH = word(bytes[2], bytes[3]);
+  uint16_t rpm = word(bytes[4], bytes[5]);
+
+  processReceivedTemperature(temperature);
+  processReceivedpH(pH);
+  processReceivedStirringRPM(rpm);
+}
+
+void processReceivedTemperature(float temperature){
+  temperature /= 100;
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println("°C");
+}
+
+void processReceivedpH(float pH){
+  pH /= 100;
+  Serial.print("pH: ");
+  Serial.println(pH);
+}
+
+void processReceivedStirringRPM(int rpm){
+  Serial.print("Motor RPM: ");
+  Serial.println(rpm);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  // delay(10);
+  // connectToWifi();
+  // client.setServer("test.mosquitto.org", 1883);
+  // Wire.onReceive(sendToMQTT); // Register a function to be called when data is received
+}
 
 void loop() {
-  sendTemperature(temperature);
-  sendpH(pH);
-  sendStirringRPM(rpm);
+  getReadings();
+  delay(1000);
+  // sendTemperature(31.42);
+  // sendpH(3.2945);
+  // sendStirringRPM(2023);
 
   // Connect the MQTT client
   // if (!client.connected()){
