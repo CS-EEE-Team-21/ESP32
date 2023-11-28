@@ -70,7 +70,7 @@ Since data had to be read from Wire a single byte at a time, it was easiest to m
 
 * Temperature: **Multiply by 100** to send a reading like `26.32` as `2632`.
 * pH: **Multiply by 100** to send a reading like `5.37` as `537`.
-* Stirring speed: **Round to the nearest integer** to send a reading like `1893.5` as `1893`.
+* Stirring speed: **Round to the nearest integer** to send a reading like `1893.5` as `1894`.
 
 From ESP32 to NucleoBoard, it's important to be able to differentiate between the values from different subsystems, so this is indicated by the characters, 't', 'p' and 's'. For instance, the message that would be sent from the ESP32 to indicate that the target temperature should change to 26.5°C would be something along the lines of `t 2650`.
 
