@@ -15,7 +15,7 @@
 #include <WiFi.h>
 #include "esp_wpa2.h"   // wpa2 for connection to enterprise networks
 
-#define EAP_IDENTITY "replace with your actual account"                
+#define EAP_IDENTITY " replace with your actual account"                
 #define EAP_PASSWORD "replace with your actual password" 
 
 const char* essid = "eduroam";
