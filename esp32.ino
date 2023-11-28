@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <PubSubClient.h>
+#include <math.h>
 
 #define SERVER_URL "https://test.mosquitto.org/"
 
@@ -21,13 +22,44 @@ void setup() {
   // Wire.onReceive(sendToMQTT); // Register a function to be called when data is received
 }
 
-void loop() {
+///////////////////////////// ESP32 TO ARDUINO COMMUNICATION ////////////////////////////////
+// Send with 2 decimal places, so a temperature like 25.3 is mapped to 2530 (scaled by 100)
+// 't' for temperature, 'p' for pH and 's' for stirring
+
+void sendTemperature(float temperature){
+  int temperatureData = (int)round(temperature * 100);
+  sendDataToArduino('t', temperatureData);
+}
+
+void sendpH(float pH){
+  int pHData = (int)round(pH * 100);
+  sendDataToArduino('p', pHData);
+}
+
+void sendStirringRPM(float rpm){
+  int rpmData = (int)round(rpm);
+  sendDataToArduino('s', rpmData);
+}
+
+void sendDataToArduino(char subsystem, int data){
   Wire.beginTransmission(ESP_TO_NUCLEO_PORT);
-  int value = 2500;
-  Wire.write(highByte(value));
-  Wire.write(lowByte(value));
+  Wire.write(subsystem);
+  Wire.write(highByte(data));
+  Wire.write(lowByte(data));
   Wire.endTransmission();
-  delay(1000);
+  delay(50);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+float temperature = 27.34245;
+float pH = 3.4942768523;
+float rpm = 1532.356;
+
+void loop() {
+  sendTemperature(temperature);
+  sendpH(pH);
+  sendStirringRPM(rpm);
 
   // Connect the MQTT client
   // if (!client.connected()){
@@ -42,13 +74,6 @@ void loop() {
   //   Serial.println("There was a problem sending the message...");
   // }
   // delay(5000);
-}
-
-void printAvailableFromWire(){
-  while (Wire.available()){
-    char c = Wire.read();
-    Serial.print(c);
-  }
 }
 
 void reconnect() {
