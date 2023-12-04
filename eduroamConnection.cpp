@@ -15,15 +15,15 @@
 #include <WiFi.h>
 #include "esp_wpa2.h"   // wpa2 for connection to enterprise networks
 
-#define EAP_IDENTITY " replace with your actual account"                
-#define EAP_PASSWORD "replace with your actual password" 
+#define EAP_IDENTITY "zcabjj0@ucl.ac.uk"                
+#define EAP_PASSWORD "8R%2VJ7tKnXqk$g" 
 
 const char* essid = "eduroam";
 
 void connectToWifi() {
   bool eduroamFound = false;
   
-  Serial.begin(115200);
+  Serial.begin(9600);
   delay(10);
 
   ////////////////////////////////////////////////////////////////////////////////

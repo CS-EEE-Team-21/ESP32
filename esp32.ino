@@ -1,5 +1,6 @@
 #include "eduroamConnection.h"
 
+#include <Arduino.h>
 #include <Wire.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -64,20 +65,16 @@ void getReadings(){
 
 void processReceivedTemperature(float temperature){
   temperature /= 100;
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.println("°C");
+  sendToMQTT("temp:" + String(temperature));
 }
 
 void processReceivedpH(float pH){
   pH /= 100;
-  Serial.print("pH: ");
-  Serial.println(pH);
+  sendToMQTT("ph:" + String(pH));
 }
 
 void processReceivedStirringRPM(int rpm){
-  Serial.print("Motor RPM: ");
-  Serial.println(rpm);
+  sendToMQTT("rots:" + String(rpm));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,32 +82,23 @@ void processReceivedStirringRPM(int rpm){
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  // delay(10);
-  // connectToWifi();
-  // client.setServer("test.mosquitto.org", 1883);
-  // Wire.onReceive(sendToMQTT); // Register a function to be called when data is received
+  delay(10);
+  connectToWifi();
+  client.setServer("test.mosquitto.org", 1883);
 }
 
 void loop() {
   getReadings();
-  delay(1000);
   // sendTemperature(31.42);
   // sendpH(3.2945);
   // sendStirringRPM(2023);
 
   // Connect the MQTT client
-  // if (!client.connected()){
-  //   reconnect();
-  // }
+  if (!client.connected()){
+    reconnect();
+  }
 
-  // // Publish with the topic of cheese and the a custom cheesy message
-  // bool success = client.publish("UCL_EE-CS_team21", "edam is the only cheese made backwards");
-  // if (success){
-  //   Serial.println("Message was published successfully!");
-  // } else {
-  //   Serial.println("There was a problem sending the message...");
-  // }
-  // delay(5000);
+  delay(1000);
 }
 
 void reconnect() {
@@ -132,6 +120,10 @@ void reconnect() {
   }
 }
 
-void sendToMQTT(){
-  ;
+void sendToMQTT(String message){
+  Serial.println(message);
+  bool success = client.publish("UCL_EE-CS_team21", message.c_str());
+  if (!success){
+    Serial.println("There was a problem sending the message...");
+  }
 }
