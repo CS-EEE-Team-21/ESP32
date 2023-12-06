@@ -177,9 +177,6 @@ void setup() {
 
 void loop() {
   getReadings();
-  // updateTargetTemperature(31.41);
-  // updateTargetPH(3.2945);
-  // updateTargetRotation(2023);
 
   // Connect the MQTT client
   if (!client.connected()){
@@ -191,6 +188,6 @@ void loop() {
   if (!subSuccess){
     Serial.println("There was a problem receiving the message...");
   }
-
+  delay(3000);
   client.loop();
 }
